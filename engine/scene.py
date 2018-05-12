@@ -15,5 +15,5 @@ class Scene:
         # giant list of vertices, edges, and faces
         pass
 
-    
+
 
