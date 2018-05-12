@@ -64,10 +64,34 @@ class Scene:
 
         return windex_faces
 
-    def filter_vertices(self, camera_position, screen_points):
-        relative_vectors = map(lambda x: x - camera_position, screen_points)
+    def filter_vertices(self, camera_position, screen_points, vertices):
+        rel_v = map(lambda x: x - camera_position, screen_points)
 
-        def check_point:
+        camera_basis_vector = Vec3((rel_v[0].x + rel_v[1].x) / 2, self.primary_camera.focal_length, (rel_v[0].z + rel_v[3].z) / 2)
+        plane_constant = camera_basis_vector.dot(rel_v[0])
+
+
+        def check(vertex):
+            dot = camera_basis_vector.dot(vertex)
+            sign = dot / abs(dot)
+            if sign > 0:
+                t = plane_constant / dot
+                v = t * vertex # intercept vector
+                return v.x < rel_v[0].x and v.x > rel_v[1].x and v.z < rel_v[0].z and v.z > rel_v[3].z
+            else:
+                return False
+
+        return list(map(lambda x: check(x), vertices))
+
+
+        # def get_far_vector(v, far_depth):
+        #
+        # far_depth_vectors = map(lambda x: get_far_vector(x, self.primary_camera.far_depth), relative_vectors)
+
+
+
+
+
             
 
 

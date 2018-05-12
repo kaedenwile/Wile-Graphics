@@ -22,6 +22,9 @@ class Vec3:
     def cross(self, other):
         return Vec3(self.y*other.z - self.z*other.y, -self.x*other.z+self.z*other.x, self.x*other.y-self.y*other.x)
 
+    def dot(self, other):
+        return (self.x * other.x + self.y * other.y + self.z * other.z)
+
     @staticmethod
     def zero():
         return Vec3(0, 0, 0)
