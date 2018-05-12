@@ -113,6 +113,5 @@ class Scene:
         w_faces.sort(key=lambda w: w[1], reverse=True)
 
         return list(map(lambda w: w[1], w_faces))
-            
 
 
