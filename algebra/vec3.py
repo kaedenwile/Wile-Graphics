@@ -7,6 +7,12 @@ class Vec3:
         self.y = y
         self.z = z
 
+    def length(self):
+        return pow(pow(self.x, 2) + pow(self.y, 2) + pow(self.z, 2), 0.5)
+
+    def normalized(self):
+        return self * (1 / self.length())
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
 
@@ -18,6 +24,9 @@ class Vec3:
 
     def __mul__(self, other):
         return Vec3(self.x * other, self.y * other, self.z * other)
+
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     def cross(self, other):
         return Vec3(self.y*other.z - self.z*other.y, -self.x*other.z+self.z*other.x, self.x*other.y-self.y*other.x)

@@ -27,46 +27,66 @@ class Scene:
         # apply transformations and children to build a
         # giant list of vertices, edges, and faces
 
-        return Scene._make_recursive(self.root, Transform.none(), (0, 0))
+        def make_recursive(node, transform, offsets):
+            vertices = []
+            edges = []
+            faces = []
+            cameras = []
 
-    @staticmethod
-    def _make_recursive(node, transform, offsets):
-        vertices = []
-        edges = []
-        faces = []
-        cameras = []
+            trans = transform.combine(node.transform)
 
-        trans = transform.combine(node.transform)
+            for vertex in node.mesh.vertices:
+                vertices.append(trans.apply(vertex))
 
-        for vertex in node.mesh.vertices:
-            vertices.append(trans.apply(vertex))
+            for edge in node.mesh.edges:
+                edges.append((edge[0] + offsets[0], edge[1] + offsets[0]))
 
-        for edge in node.mesh.edges:
-            edges.append((edge[0] + offsets[0], edge[1] + offsets[0]))
+            for face in node.mesh.faces:
+                faces.append((face[0] + offsets[1], face[1] + offsets[1], face[2] + offsets[1]))
 
-        for face in node.mesh.faces:
-            faces.append((face[0] + offsets[1], face[1] + offsets[1], face[2] + offsets[1]))
+            for child in node.children:
+                if type(child) is Camera:
+                    cameras.append((child.make(trans)))
+                else:
+                    data = make_recursive(child, trans, (offsets[0] + len(vertices), offsets[1] + len(edges)))
+                    vertices += data[0]
+                    edges += data[1]
+                    faces += data[2]
 
-        for child in node.children:
-            if type(child) is Camera:
-                cameras.append((child.make(trans)))
-            else:
-                data = Scene._make_recursive(child, trans, (offsets[0] + len(vertices), offsets[1] + len(edges)))
-                vertices += data[0]
-                edges += data[1]
-                faces += data[2]
+            return vertices, edges, faces, cameras
 
-        return vertices, edges, faces, cameras
+        return make_recursive(self.root, Transform.none(), (0, 0))
 
     @staticmethod
     def camera_culling(camera, vertices, edges, faces):
+        camera_2d = camera["2d"]
+        camera_width = camera["camera"].width / 2
+        camera_height = camera["camera"].height / 2
+        focal_point = camera["focal_point"]
+        screen_center = camera["center"]
+
+        calc_t = lambda v: (screen_center.x - focal_point.x) / (v.x - focal_point.x)
+        calc_intersect = lambda t, v: focal_point + t * (v - focal_point)
+
+        legal_vertices = []
+        for vertex in vertices:
+            t = calc_t(vertex)
+            if t < 1:
+                continue
+
+            intersect = calc_t(t, vertex)
+            pos_2d = camera_2d(intersect)
+            if not abs
+
+
+
         return faces
 
     @staticmethod
     def w_index(camera, vertices, edges, faces):
-        focus = camera[0]
-        camera_near = camera[2].near_depth
-        camera_far = camera[2].far_depth
+        focus = camera["focal_point"]
+        camera_near_sqd = pow(camera["camera"].near_depth, 2)
+        camera_far_sqd = pow(camera["camera"].far_depth, 2)
 
         w_faces = []
         for face in faces:
@@ -89,15 +109,10 @@ class Scene:
             w_faces.append((face, w_index))
 
         # drop near and far
-        w_faces = filter(lambda w: camera_near < w[1] < camera_far, w_faces)
+        w_faces = filter(lambda w: camera_near_sqd < w[1] < camera_far_sqd, w_faces)
         w_faces.sort(key=lambda w: w[1], reverse=True)
 
         return list(map(lambda w: w[1], w_faces))
-
-    def filter_vertices(self, camera_position, screen_points):
-        relative_vectors = map(lambda x: x - camera_position, screen_points)
-
-        # def check_point:
             
 
 
