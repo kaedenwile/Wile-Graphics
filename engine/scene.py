@@ -26,7 +26,6 @@ class Scene:
         edges = dataset[1]  # each edge has 2 indices which correspond to vertices
         faces = dataset[2]  # each face has 3 indices, which correspond to edges (ex: [1,2,3])
 
-        # camera.position
         for face in faces:
             verts = []
 
@@ -34,9 +33,11 @@ class Scene:
                 for vertex in edges[edge]:
                     if vertex not in verts:
                         verts.append(vertices[vertex])
-            x = 0;
-            y = 0;
-            z = 0;
+
+            x = 0
+            y = 0
+            z = 0
+
             for vertex in verts:
                 x += vertex[0]
                 y += vertex[1]
@@ -45,9 +46,19 @@ class Scene:
             x = x/3
             y = y/3
             z = z/3
+            wcoordinate = [x, y, z]
+            # camera.position
+
+            wnumber = (Math.pow((wcoordinate[0]-camera.position[0]), 2)
+                                + Math.pow((wcoordinate[1]-camera.position[1]), 2) +
+                                Math.pow((wcoordinate[2]-camera.position[2]), 2))
 
         windex_faces = []  # each windex face has 4 indices, the last of which is the w-index
-        ## Make w-indices
+        for vertex in verts:
+            windex_faces.append(vertex)
+
+        windex.append(wnumber)
+
 
         ## sort windex faces by w-index
 
