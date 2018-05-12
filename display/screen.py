@@ -38,7 +38,7 @@ class Screen(object):
         self.custom_update(self)
 
         if self.next_bitmap:
-            self.current_image = self.next_bitmap.image
+            self.current_image = self.next_bitmap.image()
             self._canvas.create_image(0, 0, image=self.current_image, anchor=tk.NW)
             self._canvas.pack()
 

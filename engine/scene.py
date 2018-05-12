@@ -22,11 +22,26 @@ class Scene(object):
 
         world_faces = self.w_index(camera, vertices, self.camera_culling(camera, vertices, faces))
 
-        ## DRAW
+        # DRAW
         bitmap = Bitmap(camera["camera"].width, camera["camera"].height)
-        # for face in world_faces:
-        for face in faces:
-            bitmap.draw_triangle(map(lambda v: camera["2d"](vertices[v]), face), (255, 0, 0))
+        i = 0
+        for face in world_faces:
+            camera_2d = camera["2d"]
+            focal_point = camera["focal_point"]
+            screen_center = camera["center"]
+
+            calc_t = lambda v: (screen_center.y - focal_point.y) / (v.y - focal_point.y) # (float(screen_center.x) - focal_point.x) / (float(v.x) - focal_point.x) if v.x != focal_point.x else \
+
+            calc_intersect = lambda t, v: focal_point + (v - focal_point) * t
+
+            def fun(v):
+                vert = vertices[v]
+                t = calc_t(vert)
+                intersect = calc_intersect(t, vert)
+                return camera_2d(intersect)
+
+            bitmap.draw_triangle(map(fun, face))# (147, 53, 227) if i == 0 else (255, 0, 0))
+            i += 1
 
         return bitmap
 
@@ -72,27 +87,30 @@ class Scene(object):
 
         calc_t = lambda v: (screen_center.x - focal_point.x) / (v.x - focal_point.x) if v.x != focal_point.x else \
                     (screen_center.y - focal_point.y) / (v.y - focal_point.y)
-        calc_intersect = lambda t, v: focal_point + t * (v - focal_point)
+        calc_intersect = lambda t, v: focal_point + (v - focal_point) * t
 
         legal_vertices = []
         for vertex in vertices:
             if vertex == focal_point:
+                print("FOCAL POINT")
                 continue
 
             t = calc_t(vertex)
-            if t < 1:
+            if t < 0:
+                print("LESS THAN ONE")
                 continue
 
             intersect = calc_intersect(t, vertex)
             pos_2d = camera_2d(intersect)
             if not (abs(pos_2d.x) < camera_width and abs(pos_2d.y) < camera_height):
+                print("OUTSIDE BOUNDS")
                 continue
 
             legal_vertices.append(vertex)
 
         new_faces = []
         for face in faces:
-            if any(x in face for x in legal_vertices):
+            if any(vertices[v] in legal_vertices for v in face):
                 new_faces.append(face)
 
         return new_faces
@@ -129,6 +147,6 @@ class Scene(object):
         w_faces = filter(lambda w: camera_near_sqd < w[1] < camera_far_sqd, w_faces)
         w_faces.sort(key=lambda w: w[1], reverse=True)
 
-        return list(map(lambda w: w[1], w_faces))
+        return list(map(lambda w: w[0], w_faces))
 
 
