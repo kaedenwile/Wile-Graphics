@@ -26,7 +26,6 @@ class Bitmap(object):
         return self.bits[key[0] + self.width * key[1]]
 
     def draw_triangle(self, points, color=None):
-
         points = list(map(lambda p: Vec2((p.x + 1) * self.width / 2.0, (p.y + 1) * self.height / 2.0), points))
 
         if not color:
@@ -36,17 +35,20 @@ class Bitmap(object):
         points.sort(key=lambda p: p.x)
 
         line1 = lambda x: (points[0].y - points[1].y) / (points[0].x - points[1].x) * (x - points[0].x) + points[0].y \
-            if (points[0].x - points[1].x) != 0 else float("nan")
+            if abs(points[0].x - points[1].x) > 0.00001 else float("nan")
         line2 = lambda x: (points[1].y - points[2].y) / (points[1].x - points[2].x) * (x - points[1].x) + points[1].y \
-            if (points[1].x - points[2].x) != 0 else float("nan")
+            if abs(points[1].x - points[2].x) > 0.00001 else float("nan")
         line3 = lambda x: (points[2].y - points[0].y) / (points[2].x - points[0].x) * (x - points[2].x) + points[2].y \
-            if (points[2].x - points[0].x) != 0 else float("nan")
+            if abs(points[2].x - points[0].x) > 0.00001 else float("nan")
 
         x_vals = map(lambda p: p.x, points)
         min_x = min(x_vals)
         max_x = max(x_vals)
 
         for x in xrange(int(min_x), int(max_x)):
+            if not 0 < x < self.width:
+                continue
+
             if x < points[1].x:
                 y_0 = line1(x)
                 if math.isnan(y_0):
@@ -57,8 +59,14 @@ class Bitmap(object):
                     y_0 = line1(x)
 
             y_1 = line3(x)
-            if math.isnan(y_1):
+            if math.isnan(y_1) or math.isnan(y_0):
                 continue
+
+            print(int(math.floor(min(y_0, y_1))) - int(math.ceil(max(y_0, y_1))))
+            if abs(int(math.floor(min(y_0, y_1))) - int(math.ceil(max(y_0, y_1)))) > 300:
+                print(y_0, y_1)
+                for point in points:
+                    print(point)
 
             for y in xrange(int(math.floor(min(y_0, y_1))),
                             int(math.ceil(max(y_0, y_1)))):
