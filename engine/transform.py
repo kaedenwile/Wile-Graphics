@@ -8,6 +8,10 @@ class Transform:
         self.rotation = rotation
         self.scaling = scaling
 
+    def apply(self, vertex):
+        pass
+
+
     @staticmethod
     def none():
         return Transform(Vec3.zero(), Vec3.zero(), Vec3.zero())

@@ -9,11 +9,18 @@ class Scene:
         self.primary_camera = None
 
     def make(self):
-
-
         # apply transformations and children to build a
         # giant list of vertices, edges, and faces
+
+        vertices = []
+        edges = []
+        faces = []
+
         pass
+
+    def _make_recursive(self, node, translation):
+        pass
+
 
 
 

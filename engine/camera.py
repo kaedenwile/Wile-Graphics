@@ -13,6 +13,3 @@ class Camera(Node):
 
         self.near_depth = near_depth
         self.far_depth = far_depth
-
-        # self.transform = transform
-
