@@ -81,9 +81,12 @@ class Scene:
 
             legal_vertices.append(vertex)
 
-        
+        newFaces = []
+        for face in faces:
+            if any(x in face for x in legal_vertices):
+                newFaces.append(face)
 
-        return faces
+        return newFaces
 
     @staticmethod
     def w_index(camera, vertices, edges, faces):
