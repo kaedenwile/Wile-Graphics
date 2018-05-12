@@ -10,7 +10,22 @@ import math
 #
 class Transform:
 
-    def __init__(self, translation, rotation, scaling):
+    def __init__(self, matrix, translation):
+        self.matrix = matrix
+        self.translation = translation
+
+    def apply(self, vertex):
+        return self.matrix * vertex + self.translation
+
+    def combine(self, other):
+        return Transform(self.matrix * other.matrix, self.matrix * other.translation + self.translation)
+
+    @staticmethod
+    def none():
+        return Transform.make(Vec3.zero(), Vec3.zero(), Vec3.zero())
+
+    @staticmethod
+    def make(translation, rotation, scaling):
         scale = Mat3([
             scaling[0], 0, 0,
             0, scaling[1], 0,
@@ -32,14 +47,4 @@ class Transform:
             0, 0, 1
         ])
 
-        self.matrix = scale * x_rot * y_rot * z_rot
-        self.translation = translation
-
-
-    def apply(self, vertex):
-        return self.matrix * vertex + translation
-
-
-    @staticmethod
-    def none():
-        return Transform(Vec3.zero(), Vec3.zero(), Vec3.zero())
+        return Transform(scale * x_rot * y_rot * z_rot, translation)
