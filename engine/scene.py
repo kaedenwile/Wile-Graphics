@@ -32,11 +32,21 @@ class Scene:
 
             for edge in face:
                 for vertex in edges[edge]:
-                    verts.append(vertices[vertex])
+                    if vertex not in verts:
+                        verts.append(vertices[vertex])
+            x = 0;
+            y = 0;
+            z = 0;
+            for vertex in verts:
+                x += vertex[0]
+                y += vertex[1]
+                z += vertex[0]
 
-            for vert in verts:
+            x = x/3
+            y = y/3
+            z = z/3
 
-
+            
 
         windex_faces = []  # each windex face has 4 indices, the last of which is the w-index
         ## Make w-indices
