@@ -6,7 +6,7 @@ class Vec3:
         self.z = z
 
     def __eq__(self, other):
-        return ( self.x == other.x && self.y == other.y && self.z == other.z)
+        return ( self.x == other.x and self.y == other.y and self.z == other.z)
 
     @staticmethod
     def zero():
