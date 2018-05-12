@@ -45,5 +45,7 @@ class Scene:
 
         return windex_faces
 
-
-
+    def filter_vertices(self):
+        screen_vec = self.primary_camera.get_screen_vectors()
+        vertices = []
+        node = self.root
