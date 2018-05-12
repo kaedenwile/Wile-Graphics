@@ -53,16 +53,10 @@ class Scene:
 
         return windex_faces
 
-    def filter_vertices(self, vertices):
-        screen_edges = self.primary_camera.get_camera_space
-        slope_x = screen_edges[0]
-        slope_y = screen_edges[1]
+    def filter_vertices(self, camera_position, screen_points):
+        relative_vectors = map(lambda x: x - camera_position, screen_points)
 
-        def check_bounds(vertex):
-            v = vertex - self.primary_camera.position
-            if vertex.y > self.primary_camera.focal_length and vertex.y < self.primary_camera.far_depth:
-                if abs(vertex.x) < slope_x * vertex.y
+        def check_point:
+            
 
 
-
-        return filter(lambda , vertices)
