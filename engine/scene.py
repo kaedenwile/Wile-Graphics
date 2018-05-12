@@ -35,7 +35,7 @@ class Scene:
                     verts.append(vertices[vertex])
 
             for vert in verts:
-
+                pass
 
 
         windex_faces = []  # each windex face has 4 indices, the last of which is the w-index
