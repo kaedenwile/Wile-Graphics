@@ -46,8 +46,6 @@ class Scene:
             y = y/3
             z = z/3
 
-            
-
         windex_faces = []  # each windex face has 4 indices, the last of which is the w-index
         ## Make w-indices
 
