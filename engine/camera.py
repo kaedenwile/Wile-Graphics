@@ -15,3 +15,23 @@ class Camera(Node):
         self.near_depth = near_depth
         self.far_depth = far_depth
         # self.transform = transform
+
+    def make(self, transform):
+        """
+        Returns a Vec3 -- the focal point of the camera,
+        followed by an array of the four corners of the screen
+        in counterclockwise order starting in the upper right,
+        all with the transform applied.
+        A reference to self is also attached.
+        """
+
+        w = self.width / 2
+        h = self.height / 2
+        f = self.focal_length
+
+        return transform.apply(Vec3.zero()), list(map(transform.apply, [
+            Vec3(w, f, h),
+            Vec3(-w, f, h),
+            Vec3(-w, f, -h),
+            Vec3(w, f, -h),
+        ])), self

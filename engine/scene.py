@@ -1,3 +1,4 @@
+from engine import Transform, Camera
 from engine.node import Node
 
 
@@ -8,24 +9,66 @@ class Scene:
 
         self.primary_camera = None
 
+    def render(self):
+        vertices, edges, faces, cameras = self.make()
+
+        camera = None
+        for cam in cameras:
+            if cam[2] is self.primary_camera:
+                camera = cam
+                break
+
+
+        world_faces = self.w_index(camera, vertices, edges, *self.camera_culling(camera, vertices, edges, faces))
+
+        ## DRAW
+
     def make(self):
         # apply transformations and children to build a
         # giant list of vertices, edges, and faces
 
+        return Scene._make_recursive(self.root, Transform.none(), (0, 0))
+
+    @staticmethod
+    def _make_recursive(node, transform, offsets):
         vertices = []
         edges = []
         faces = []
+        cameras = []
 
-        pass
+        trans = transform.combine(node.transform)
 
-    def _make_recursive(self, node, translation):
-        pass
+        for vertex in node.mesh.vertices:
+            vertices.append(trans.apply(vertex))
 
-    def sort_windex(self, camera, dataset):
-        vertices = dataset[0]  # each vertex is a Vec3 object
-        edges = dataset[1]  # each edge has 2 indices which correspond to vertices
-        faces = dataset[2]  # each face has 3 indices, which correspond to edges (ex: [1,2,3])
+        for edge in node.mesh.edges:
+            edges.append((edge[0] + offsets[0], edge[1] + offsets[0]))
 
+        for face in node.mesh.faces:
+            faces.append((face[0] + offsets[1], face[1] + offsets[1], face[2] + offsets[1]))
+
+        for child in node.children:
+            if type(child) is Camera:
+                cameras.append((child.make(trans)))
+            else:
+                data = Scene._make_recursive(child, trans, (offsets[0] + len(vertices), offsets[1] + len(edges)))
+                vertices += data[0]
+                edges += data[1]
+                faces += data[2]
+
+        return vertices, edges, faces, cameras
+
+    @staticmethod
+    def camera_culling(camera, vertices, edges, faces):
+        return faces
+
+    @staticmethod
+    def w_index(camera, vertices, edges, faces):
+        focus = camera[0]
+        camera_near = camera[2].near_depth
+        camera_far = camera[2].far_depth
+
+        w_faces = []
         for face in faces:
             verts = []
 
@@ -34,35 +77,22 @@ class Scene:
                     if vertex not in verts:
                         verts.append(vertices[vertex])
 
-            x = 0
-            y = 0
-            z = 0
+            x = sum(map(lambda v: v.x, verts)) / len(verts)
+            y = sum(map(lambda v: v.y, verts)) / len(verts)
+            z = sum(map(lambda v: v.z, verts)) / len(verts)
 
-            for vertex in verts:
-                x += vertex[0]
-                y += vertex[1]
-                z += vertex[0]
+            # TODO make relative to screen
+            w_index = (pow((x - focus.x), 2) +
+                       pow((y - focus.y), 2) +
+                       pow((z - focus.z), 2))
 
-            x = x/3
-            y = y/3
-            z = z/3
-            wcoordinate = [x, y, z]
-            # camera.position
+            w_faces.append((face, w_index))
 
-            wnumber = (Math.pow((wcoordinate[0]-camera.position[0]), 2)
-                                + Math.pow((wcoordinate[1]-camera.position[1]), 2) +
-                                Math.pow((wcoordinate[2]-camera.position[2]), 2))
+        # drop near and far
+        w_faces = filter(lambda w: camera_near < w[1] < camera_far, w_faces)
+        w_faces.sort(key=lambda w: w[1], reverse=True)
 
-        windex_faces = []  # each windex face has 4 indices, the last of which is the w-index
-        for vertex in verts:
-            windex_faces.append(vertex)
-
-        windex.append(wnumber)
-
-
-        ## sort windex faces by w-index
-
-        return windex_faces
+        return list(map(lambda w: w[1], w_faces))
 
     def filter_vertices(self, camera_position, screen_points, vertices):
         rel_v = map(lambda x: x - camera_position, screen_points)
