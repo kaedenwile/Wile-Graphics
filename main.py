@@ -52,11 +52,17 @@ mesh = Mesh([
 #     # (1, 4, 5),  # LEFT
 # ])
 
-node = Node(mesh, Transform.make(Vec3(0, 5, 0), Vec3(0, 0, 0), Vec3(1, 1, 1)))
-# node = Node(mesh, Transform.make(Vec3(0, 5, 0), Vec3(-0.6, 0.8, -0.5), Vec3(9, 1, 9)))
-scene.root.add_child(node)
+node = Node(mesh, Transform.make(Vec3(0, 5, 0), Vec3(0, 0, 0), Vec3(1, 1, 1) ))
+node2 = Node(mesh, Transform.make(Vec3(0, 3, 0), Vec3(0, 0, 0), Vec3(1, 1, 1) * 0.5))
+node3 = Node(mesh, Transform.make(Vec3(2, 10, 0), Vec3(0, 0, 0), Vec3(1, 1, 1) * 2))
 
-camera = Camera(0.1, 1.0, 0.75, 1, 20)
+# node = Node(mesh, Transform.make(Vec3(0, 5, 0), Vec3(-0.6, 0.8, -0.5), Vec3(9, 1, 9)))
+
+scene.root.add_child(node)
+# scene.root.add_child(node2)
+# scene.root.add_child(node3)
+
+camera = Camera(0.05, 0.5, 0.375, 1, 20)
 scene.root.add_child(camera)
 scene.primary_camera = camera
 
@@ -82,11 +88,20 @@ def key_handler(key):
     elif key == 's':
         node.transform.translation.z -= 1
 
+    elif key == 'q':
+        node.transform.translation.y -= 1
+    elif key == 'e':
+        node.transform.translation.y += 1
+
+    print(node.transform)
+
+
+
 
 display.Screen(*size, title="UW Graphics", update=main_loop, callback=key_handler)
-
-print("BYPASS")
-
-while True:
-    time.sleep(0.5)
-    print("PING")
+#
+# print("BYPASS")
+#
+# while True:
+#     time.sleep(0.5)
+#     print("PING")

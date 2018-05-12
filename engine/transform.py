@@ -21,7 +21,7 @@ class Transform(object):
         return self.matrix * vertex + self.translation
 
     def combine(self, other):
-        return Transform(self.matrix * other.matrix, self.matrix * other.translation + self.translation)
+        return Transform(self.matrix * other.matrix, other.translation + self.translation)
 
     @staticmethod
     def none():

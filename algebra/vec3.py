@@ -26,7 +26,8 @@ class Vec3(object):
         return Vec3(self.x * other, self.y * other, self.z * other)
 
     def __str__(self):
-        return "<%.2f, %.2f, %.2f>" % (self.x, self.y, self.z)
+        # return "<%.2f, %.2f, %.2f>" % (self.x, self.y, self.z)
+        return "<%f, %f, %f>" % (self.x, self.y, self.z)
 
     def __iter__(self):
         return iter([self.x, self.y, self.z])
