@@ -17,6 +17,9 @@ class Vec3:
     def __mul__(self, other):
         return Vec3(self.x * other, self.y * other, self.z * other)
 
+    def cross(self, other):
+        return Vec3(self.y*other.z - self.z*other.y, -self.x*other.z+self.z*other.x, self.x*other.y-self.y*other.x)
+
     @staticmethod
     def zero():
         return Vec3(0, 0, 0)
