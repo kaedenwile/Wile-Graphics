@@ -23,3 +23,6 @@ class Camera(Node):
         v_3 = Vec3(-self.width / 2, self.focal_length, -self.height / 2)
         v_4 = Vec3(self.width / 2, self.focal_length, -self.height / 2)
         return [v_1, v_2, v_3, v_4]
+
+    def get_camera_space(self):
+        return [self.width / 2 / self.focal_length, self.height / 2 / self.focal_length]
