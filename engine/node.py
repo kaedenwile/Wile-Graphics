@@ -3,7 +3,7 @@ from engine.shader import Shader
 from engine.transform import Transform
 
 
-class Node:
+class Node(object):
 
     def __init__(self, mesh=Mesh.empty(), transform=Transform.none(), shader=Shader("#ffffff")):
         self.children = []

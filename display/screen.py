@@ -1,7 +1,7 @@
-import threading
 import Tkinter as tk
 
-class Screen:
+
+class Screen(object):
 
     def __init__(self, width, height, title, update):
         self.width = width

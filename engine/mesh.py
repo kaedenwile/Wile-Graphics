@@ -1,12 +1,11 @@
 
 
-class Mesh:
+class Mesh(object):
 
-    def __init__(self, vertices, edges, faces):
+    def __init__(self, vertices, faces):
         self.vertices = vertices  # Vec3
-        self.edges = edges  # Vec2 <- indices of vertices
-        self.faces = faces  # Vec3 <- indices of edges
+        self.faces = faces  # Vec3 <- indices of vertices
 
     @staticmethod
     def empty():
-        return Mesh([], [], [])
+        return Mesh([], [])

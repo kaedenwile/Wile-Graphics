@@ -32,8 +32,8 @@ class Camera(Node):
         focal_point = transform.apply(Vec3.zero())
         center = transform.apply(Vec3(0, f, 0))
 
-        right = transform.apply(Vec3(w, f, 0)).normalized()
-        top = transform.apply(Vec3(0, f, h)).normalized()
+        right = (transform.apply(Vec3(w, f, 0)) - center).normalized()
+        top = (transform.apply(Vec3(0, f, h)) - center).normalized()
 
         def map_to_2d(vector):
             offset = vector - center

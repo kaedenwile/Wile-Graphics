@@ -1,6 +1,6 @@
 
 
-class Vec3:
+class Vec3(object):
 
     def __init__(self, x, y, z):
         self.x = x
@@ -25,6 +25,12 @@ class Vec3:
     def __mul__(self, other):
         return Vec3(self.x * other, self.y * other, self.z * other)
 
+    def __str__(self):
+        return "<%i, %i, %i>" % (self.x, self.y, self.z)
+
+    def __iter__(self):
+        return iter([self.x, self.y, self.z])
+
     def dot(self, other):
         return self.x * other.x + self.y * other.y + self.z * other.z
 
@@ -32,7 +38,7 @@ class Vec3:
         return Vec3(self.y*other.z - self.z*other.y, -self.x*other.z+self.z*other.x, self.x*other.y-self.y*other.x)
 
     def dot(self, other):
-        return (self.x * other.x + self.y * other.y + self.z * other.z)
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     @staticmethod
     def zero():

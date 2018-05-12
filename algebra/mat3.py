@@ -1,7 +1,7 @@
 from algebra import Vec3
 
 
-class Mat3:
+class Mat3(object):
 
     def __init__(self, values):
         self.values = values

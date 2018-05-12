@@ -1,8 +1,10 @@
-from engine import Transform, Camera
-from engine.node import Node
+from display import Bitmap
+from transform import Transform
+from camera import Camera
+from node import Node
 
 
-class Scene:
+class Scene(object):
 
     def __init__(self):
         self.root = Node()
@@ -10,26 +12,30 @@ class Scene:
         self.primary_camera = None
 
     def render(self):
-        vertices, edges, faces, cameras = self.make()
+        vertices, faces, cameras = self.make()
 
         camera = None
         for cam in cameras:
-            if cam[2] is self.primary_camera:
+            if cam["camera"] is self.primary_camera:
                 camera = cam
                 break
 
-
-        world_faces = self.w_index(camera, vertices, edges, *self.camera_culling(camera, vertices, edges, faces))
+        world_faces = self.w_index(camera, vertices, self.camera_culling(camera, vertices, faces))
 
         ## DRAW
+        bitmap = Bitmap(camera["camera"].width, camera["camera"].height)
+        # for face in world_faces:
+        for face in faces:
+            bitmap.draw_triangle(map(lambda v: camera["2d"](vertices[v]), face), (255, 0, 0))
+
+        return bitmap
 
     def make(self):
         # apply transformations and children to build a
-        # giant list of vertices, edges, and faces
+        # giant list of vertices and faces
 
-        def make_recursive(node, transform, offsets):
+        def make_recursive(node, transform, offset):
             vertices = []
-            edges = []
             faces = []
             cameras = []
 
@@ -38,38 +44,41 @@ class Scene:
             for vertex in node.mesh.vertices:
                 vertices.append(trans.apply(vertex))
 
-            for edge in node.mesh.edges:
-                edges.append((edge[0] + offsets[0], edge[1] + offsets[0]))
-
             for face in node.mesh.faces:
-                faces.append((face[0] + offsets[1], face[1] + offsets[1], face[2] + offsets[1]))
+                faces.append((face[0] + offset, face[1] + offset, face[2] + offset))
 
             for child in node.children:
                 if type(child) is Camera:
                     cameras.append((child.make(trans)))
                 else:
-                    data = make_recursive(child, trans, (offsets[0] + len(vertices), offsets[1] + len(edges)))
+                    data = make_recursive(child, trans, (offset + len(vertices)))
                     vertices += data[0]
-                    edges += data[1]
-                    faces += data[2]
+                    faces += data[1]
 
-            return vertices, edges, faces, cameras
+            return vertices, faces, cameras
 
-        return make_recursive(self.root, Transform.none(), (0, 0))
+        return make_recursive(self.root, Transform.none(), 0)
 
     @staticmethod
-    def camera_culling(camera, vertices, edges, faces):
+    def camera_culling(camera, vertices, faces):
+        """Does culling based on if vertexes are in the
+        \"Pyramid\" of the camera.
+        """
         camera_2d = camera["2d"]
         camera_width = camera["camera"].width / 2
         camera_height = camera["camera"].height / 2
         focal_point = camera["focal_point"]
         screen_center = camera["center"]
 
-        calc_t = lambda v: (screen_center.x - focal_point.x) / (v.x - focal_point.x)
+        calc_t = lambda v: (screen_center.x - focal_point.x) / (v.x - focal_point.x) if v.x != focal_point.x else \
+                    (screen_center.y - focal_point.y) / (v.y - focal_point.y)
         calc_intersect = lambda t, v: focal_point + t * (v - focal_point)
 
         legal_vertices = []
         for vertex in vertices:
+            if vertex == focal_point:
+                continue
+
             t = calc_t(vertex)
             if t < 1:
                 continue
@@ -81,12 +90,15 @@ class Scene:
 
             legal_vertices.append(vertex)
 
-        
+
 
         return faces
 
     @staticmethod
-    def w_index(camera, vertices, edges, faces):
+    def w_index(camera, vertices, faces):
+        """Does culling and sorting based on
+        distance from camera.
+        """
         focus = camera["focal_point"]
         camera_near_sqd = pow(camera["camera"].near_depth, 2)
         camera_far_sqd = pow(camera["camera"].far_depth, 2)
@@ -95,10 +107,9 @@ class Scene:
         for face in faces:
             verts = []
 
-            for edge in face:
-                for vertex in edges[edge]:
-                    if vertex not in verts:
-                        verts.append(vertices[vertex])
+            for vertex in face:
+                if vertices[vertex] not in verts:
+                    verts.append(vertices[vertex])
 
             x = sum(map(lambda v: v.x, verts)) / len(verts)
             y = sum(map(lambda v: v.y, verts)) / len(verts)

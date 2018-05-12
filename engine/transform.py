@@ -8,11 +8,14 @@ import math
 #   rotation // in radians
 #   translation
 #
-class Transform:
+class Transform(object):
 
     def __init__(self, matrix, translation):
         self.matrix = matrix
         self.translation = translation
+
+    def __str__(self):
+        return "%s\n%s" % (self.matrix, self.translation)
 
     def apply(self, vertex):
         return self.matrix * vertex + self.translation
@@ -22,14 +25,14 @@ class Transform:
 
     @staticmethod
     def none():
-        return Transform.make(Vec3.zero(), Vec3.zero(), Vec3.zero())
+        return Transform.make(Vec3.zero(), Vec3.zero(), Vec3(1, 1, 1))
 
     @staticmethod
     def make(translation, rotation, scaling):
         scale = Mat3([
-            scaling[0], 0, 0,
-            0, scaling[1], 0,
-            0, 0, scaling[2]])
+            scaling.x, 0, 0,
+            0, scaling.y, 0,
+            0, 0, scaling.z])
 
         sin = list(map(lambda theta: math.sin(theta), rotation))
         cos = list(map(lambda theta: math.cos(theta), rotation))
