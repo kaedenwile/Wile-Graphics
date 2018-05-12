@@ -6,16 +6,19 @@ class Vec3:
         self.z = z
 
     def __eq__(self, other):
-        return ( self.x == other.x and self.y == other.y and self.z == other.z)
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __add__(self, other):
+        return Vec3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return self + other * -1
+
+    def __mul__(self, other):
+        return Vec3(self.x * other, self.y * other, self.z * other)
 
     @staticmethod
     def zero():
         return Vec3(0, 0, 0)
-
-    def add(self, vec_1, vec_2):
-        return Vec3(vec_1.x + vec_2.x, vec_1.y + vec_2.y, vec_1.z + vec_2.z)
-
-    def multiply(self, vec_1, scalar):
-        return Vec3(vec_1.x * scalar, vec_1.y * scalar, vec_1.z * scalar)
 
 
