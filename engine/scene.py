@@ -74,11 +74,14 @@ class Scene:
             if t < 1:
                 continue
 
-            intersect = calc_t(t, vertex)
+            intersect = calc_intersect(t, vertex)
             pos_2d = camera_2d(intersect)
-            if not abs
+            if not (abs(pos_2d.x) < camera_width and abs(pos_2d.y) < camera_height):
+                continue
 
+            legal_vertices.append(vertex)
 
+        
 
         return faces
 
