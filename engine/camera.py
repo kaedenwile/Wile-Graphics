@@ -25,24 +25,34 @@ class Camera(Node):
         A reference to self is also attached.
         """
 
-        w = self.width / 2
-        h = self.height / 2
+        w = self.width / 2.0
+        h = self.height / 2.0
         f = self.focal_length
 
-        focal_point = transform.apply(Vec3.zero())
+        focus = transform.apply(Vec3.zero())
         center = transform.apply(Vec3(0, f, 0))
+        focus_to_center = center - focus
 
-        right = (transform.apply(Vec3(w, f, 0)) - center).normalized()
-        top = (transform.apply(Vec3(0, f, h)) - center).normalized()
+        right = (transform.apply(Vec3(w, f, 0)) - center)
+        top = (transform.apply(Vec3(0, f, h)) - center)
 
         def map_to_2d(vector):
             offset = vector - center
-            return Vec2(offset.dot(right), offset.dot(top))
+            return Vec2(offset.dot(right) / pow(w, 2), offset.dot(top) / pow(h, 2))
+
+        def find_intersect(v):
+            # t = (center.y - focus.y) / (v.y - focus.y) if v.y != focus.y else float('NaN')
+
+            # t = (v.y - focus.y) / (center.y - focus.y) if v.y != focus.y else float('NaN')
+            focus_to_v = v - focus
+            t = focus_to_v.dot(focus_to_center) / focus_to_v.length()
+            return focus + (v - focus) * t, t
 
         return {
-            "focal_point": focal_point,
+            "focus": focus,
             "center": center,
             "camera": self,
-            "2d": map_to_2d
+            "2d": map_to_2d,
+            "intersect": find_intersect,
         }
 

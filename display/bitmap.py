@@ -1,5 +1,8 @@
+import math
 import random as rand
 import Tkinter as tk
+
+from algebra import Vec2
 
 
 class Bitmap(object):
@@ -14,16 +17,17 @@ class Bitmap(object):
             self.bits = [(0, 0, 0) for _ in xrange(0, self.width * self.height)]
 
     def __setitem__(self, key, value):
-        index = key[0] + self.width * key[1] + self.height*self.width/2 + self.width/2
+        index = key[0] + self.width * key[1]  # + self.height*self.width/2 # + self.width/2
+
         if 0 <= index < len(self.bits):
             self.bits[index] = value
 
-    # def __getitem__(self, key):
-    #     return self.bits[key[0] + self.width * key[1]]
+    def __getitem__(self, key):
+        return self.bits[key[0] + self.width * key[1]]
 
     def draw_triangle(self, points, color=None):
-        for p in points:
-            print(p)
+
+        points = list(map(lambda p: Vec2((p.x + 1) * self.width / 2.0, (p.y + 1) * self.height / 2.0), points))
 
         if not color:
             color = [rand.randint(0, 255) for _ in range(3)]
@@ -31,9 +35,12 @@ class Bitmap(object):
         # find middle point by x-index
         points.sort(key=lambda p: p.x)
 
-        line1 = lambda x: (points[0].y - points[1].y) / (points[0].x - points[1].x) * (x - points[0].x) + points[0].y if (points[0].x - points[1].x) != 0 else 0
-        line2 = lambda x: (points[1].y - points[2].y) / (points[1].x - points[2].x) * (x - points[1].x) + points[1].y if (points[1].x - points[2].x) != 0 else 0
-        line3 = lambda x: (points[2].y - points[0].y) / (points[2].x - points[0].x) * (x - points[2].x) + points[2].y if (points[2].x - points[0].x) != 0 else 0
+        line1 = lambda x: (points[0].y - points[1].y) / (points[0].x - points[1].x) * (x - points[0].x) + points[0].y \
+            if (points[0].x - points[1].x) != 0 else float("nan")
+        line2 = lambda x: (points[1].y - points[2].y) / (points[1].x - points[2].x) * (x - points[1].x) + points[1].y \
+            if (points[1].x - points[2].x) != 0 else float("nan")
+        line3 = lambda x: (points[2].y - points[0].y) / (points[2].x - points[0].x) * (x - points[2].x) + points[2].y \
+            if (points[2].x - points[0].x) != 0 else float("nan")
 
         x_vals = map(lambda p: p.x, points)
         min_x = min(x_vals)
@@ -41,28 +48,44 @@ class Bitmap(object):
 
         for x in xrange(int(min_x), int(max_x)):
             if x < points[1].x:
-                y_0 = int(line1(x))
+                y_0 = line1(x)
+                if math.isnan(y_0):
+                    y_0 = line2(x)
             else:
-                y_0 = int(line2(x))
-            y_1 = int(line3(x))
+                y_0 = line2(x)
+                if math.isnan(y_0):
+                    y_0 = line1(x)
 
-            for y in xrange(min(y_0, y_1), max(y_0, y_1)):
+            y_1 = line3(x)
+            if math.isnan(y_1):
+                continue
+
+            for y in xrange(int(math.floor(min(y_0, y_1))),
+                            int(math.ceil(max(y_0, y_1)))):
+                # self[(x, y)] = [255 / max(abs(max_x), abs(min_x)) * abs(x), 0, 2 * 255 / self.height * abs(y)]
                 self[(x, y)] = color
 
     def image(self):
         img = tk.PhotoImage(width=self.width, height=self.height)
 
-        row = 0
-        col = 0
-        for color in self.bits:
-            img.put('#%02x%02x%02x' % tuple(color), (row, self.width - col))
-
-            col += 1
-            if col == self.height:
-                row += 1
-                col = 0
+        for row in xrange(self.height):
+            for col in xrange(self.width):
+                img.put('#%02x%02x%02x' % tuple(self[(col, row)]), (col, self.height - row))
 
         return img
+
+
+        # row = 0
+        # col = 0
+        # for color in self.bits:
+        #     img.put('#%02x%02x%02x' % tuple(color), (row, col))
+        #
+        #     col += 1
+        #     if col == self.height:
+        #         row += 1
+        #         col = 0
+        #
+        # return img
 
     @staticmethod
     def random(screen):

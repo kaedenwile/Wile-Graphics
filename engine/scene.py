@@ -1,4 +1,11 @@
+import math
+
+from algebra import Vec3
 from display import Bitmap
+
+from vertex import Vertex
+from face import Face
+
 from transform import Transform
 from camera import Camera
 from node import Node
@@ -11,41 +18,27 @@ class Scene(object):
 
         self.primary_camera = None
 
-    def render(self):
-        vertices, faces, cameras = self.make()
+    def render(self, screen):
+        vertices, faces, cameras = self.apply_transform()
 
-        camera = None
+        transformed_camera = None
         for cam in cameras:
             if cam["camera"] is self.primary_camera:
-                camera = cam
+                transformed_camera = cam
                 break
 
-        world_faces = self.w_index(camera, vertices, self.camera_culling(camera, vertices, faces))
+        vertices = self.make(transformed_camera, vertices, faces)
+        world_faces = self.w_index(transformed_camera, vertices,
+                                   self.camera_culling(self.primary_camera, vertices, faces))
 
         # DRAW
-        bitmap = Bitmap(camera["camera"].width, camera["camera"].height)
-        i = 0
+        bitmap = Bitmap(screen.width, screen.height)
         for face in world_faces:
-            camera_2d = camera["2d"]
-            focal_point = camera["focal_point"]
-            screen_center = camera["center"]
-
-            calc_t = lambda v: (screen_center.y - focal_point.y) / (v.y - focal_point.y) # (float(screen_center.x) - focal_point.x) / (float(v.x) - focal_point.x) if v.x != focal_point.x else \
-
-            calc_intersect = lambda t, v: focal_point + (v - focal_point) * t
-
-            def fun(v):
-                vert = vertices[v]
-                t = calc_t(vert)
-                intersect = calc_intersect(t, vert)
-                return camera_2d(intersect)
-
-            bitmap.draw_triangle(map(fun, face))# (147, 53, 227) if i == 0 else (255, 0, 0))
-            i += 1
+            bitmap.draw_triangle(map(lambda v: vertices[v].screen, face))
 
         return bitmap
 
-    def make(self):
+    def apply_transform(self):
         # apply transformations and children to build a
         # giant list of vertices and faces
 
@@ -75,54 +68,63 @@ class Scene(object):
         return make_recursive(self.root, Transform.none(), 0)
 
     @staticmethod
+    def make(camera, vertices, faces):
+
+        find_intersect = camera["intersect"]
+        convert_2d = camera["2d"]
+
+        def build_vertex(world):
+            intersect, t = find_intersect(world)
+            return Vertex(world, convert_2d(intersect), t)
+
+        new_vertices = list(map(build_vertex, vertices))
+
+        # def build_face(face):
+        #     pass
+        #
+        # new_faces = list(map(build_face, faces))
+
+        return new_vertices  #, new_faces
+
+    @staticmethod
     def camera_culling(camera, vertices, faces):
-        """Does culling based on if vertexes are in the
+        """
+        Does culling based on if vertexes are in the
         \"Pyramid\" of the camera.
         """
-        camera_2d = camera["2d"]
-        camera_width = camera["camera"].width / 2
-        camera_height = camera["camera"].height / 2
-        focal_point = camera["focal_point"]
-        screen_center = camera["center"]
-
-        calc_t = lambda v: (screen_center.x - focal_point.x) / (v.x - focal_point.x) if v.x != focal_point.x else \
-                    (screen_center.y - focal_point.y) / (v.y - focal_point.y)
-        calc_intersect = lambda t, v: focal_point + (v - focal_point) * t
 
         legal_vertices = []
-        for vertex in vertices:
-            if vertex == focal_point:
-                print("FOCAL POINT")
-                continue
+        for i in range(len(vertices)):
+            vertex = vertices[i]
 
-            t = calc_t(vertex)
-            if t < 0:
+            if math.isnan(vertex.t) or vertex.t < 0:
                 print("LESS THAN ONE")
                 continue
 
-            intersect = calc_intersect(t, vertex)
-            pos_2d = camera_2d(intersect)
-            if not (abs(pos_2d.x) < camera_width and abs(pos_2d.y) < camera_height):
+            if not (abs(vertex.screen.x) <= 1 and abs(vertex.screen.y) <= 1):
                 print("OUTSIDE BOUNDS")
                 continue
 
-            legal_vertices.append(vertex)
+            legal_vertices.append(i)
 
         new_faces = []
         for face in faces:
-            if any(vertices[v] in legal_vertices for v in face):
+            if any(v in legal_vertices for v in face):
                 new_faces.append(face)
 
         return new_faces
 
     @staticmethod
-    def w_index(camera, vertices, faces):
+    def w_index(camera_info, vertices, faces):
         """Does culling and sorting based on
         distance from camera.
         """
-        focus = camera["focal_point"]
-        camera_near_sqd = pow(camera["camera"].near_depth, 2)
-        camera_far_sqd = pow(camera["camera"].far_depth, 2)
+
+        focus = camera_info["focus"]
+        camera = camera_info["camera"]
+        # camera_far_sqd = math.pow(.far_depth, 2)
+        # camera_near_sqd = math.pow(camera_info["camera"].near_depth, 2)
+        find_intersect = camera_info["intersect"]
 
         w_faces = []
         for face in faces:
@@ -132,19 +134,21 @@ class Scene(object):
                 if vertices[vertex] not in verts:
                     verts.append(vertices[vertex])
 
-            x = sum(map(lambda v: v.x, verts)) / len(verts)
-            y = sum(map(lambda v: v.y, verts)) / len(verts)
-            z = sum(map(lambda v: v.z, verts)) / len(verts)
+            if len(verts) != 3:
+                print("WRONG NUMBER")
 
-            # TODO make relative to screen
-            w_index = (pow((x - focus.x), 2) +
-                       pow((y - focus.y), 2) +
-                       pow((z - focus.z), 2))
+            x = sum(map(lambda v: v.world.x, verts)) / len(verts)
+            y = sum(map(lambda v: v.world.y, verts)) / len(verts)
+            z = sum(map(lambda v: v.world.z, verts)) / len(verts)
 
+            center = Vec3(x, y, z)
+            intersect, t = find_intersect(center)
+
+            w_index = (center - focus).length() - (intersect - focus).length()
             w_faces.append((face, w_index))
 
         # drop near and far
-        w_faces = filter(lambda w: camera_near_sqd < w[1] < camera_far_sqd, w_faces)
+        # w_faces = filter(lambda w: camera.near_depth < w[1] < camera.far_depth, w_faces)
         w_faces.sort(key=lambda w: w[1], reverse=True)
 
         return list(map(lambda w: w[0], w_faces))

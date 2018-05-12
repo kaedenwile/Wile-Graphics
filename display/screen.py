@@ -3,11 +3,12 @@ import Tkinter as tk
 
 class Screen(object):
 
-    def __init__(self, width, height, title, update):
+    def __init__(self, width, height, title, update, callback):
         self.width = width
         self.height = height
         self.title = title
         self.custom_update = update
+        self.custom_callback = callback
 
         self.alive = True
         self.current_image = None
@@ -25,7 +26,9 @@ class Screen(object):
         self._root.resizable(0, 0)
 
         self._canvas = tk.Canvas(self._root, width=self.width, height=self.height)
-        self._canvas.pack_propagate(0)  # Don't allow the widgets inside to determine the frame's width / height
+        self._canvas.focus_set()
+        self._canvas.bind("<Key>", self.key_callback)
+        self._canvas.pack_propagate(0)  # Don't allow the widgets inside to detaermine the frame's width / height
         self._canvas.pack()
 
         self._update()
@@ -48,6 +51,10 @@ class Screen(object):
 
         print("UPDATE")
         self._root.after(500, self._update)
+
+    def key_callback(self, event):
+        self.custom_callback(event.char)
+        # print "pressed", repr(event.char)
 
     def quit(self):
         self.alive = False

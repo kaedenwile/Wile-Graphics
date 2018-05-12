@@ -5,4 +5,4 @@ class Vec2(object):
         self.y = y
 
     def __str__(self):
-        return "(%i, %i)" % (self.x, self.y)
+        return "(%.2f, %.2f)" % (self.x, self.y)
