@@ -16,4 +16,10 @@ class Scene:
         pass
 
 
+    def filter_vertices(self):
+        screen_vec = self.primary_camera.get_screen_vectors()
+        vertices = []
+        node = self.root
+
+
 
