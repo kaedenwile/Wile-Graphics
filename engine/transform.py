@@ -50,4 +50,4 @@ class Transform(object):
             0, 0, 1
         ])
 
-        return Transform(scale * x_rot * y_rot * z_rot, translation)
+        return Transform(x_rot * y_rot * z_rot * scale, translation)

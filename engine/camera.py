@@ -43,11 +43,6 @@ class Camera(Node):
             return Vec2(offset.dot(right) / w, offset.dot(top) / h)
 
         def find_intersect(v):
-            # t = (center.y - focus.y) / (v.y - focus.y) if v.y != focus.y else float('NaN')
-
-            # t = (v.y - focus.y) / (center.y - focus.y) if v.y != focus.y else float('NaN')
-
-            # b.normalized() * ((b.length() * a.length()) / a.dot(b))
 
             focus_to_v = v - focus
             t = ((focus_to_v.length() * focus_to_center.length()) / focus_to_v.dot(focus_to_center))

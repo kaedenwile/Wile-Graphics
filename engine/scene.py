@@ -4,7 +4,6 @@ from algebra import Vec3
 from display import Bitmap
 
 from vertex import Vertex
-from face import Face
 
 from transform import Transform
 from camera import Camera
@@ -128,27 +127,21 @@ class Scene(object):
         camera = camera_info["camera"]
         # camera_far_sqd = math.pow(.far_depth, 2)
         # camera_near_sqd = math.pow(camera_info["camera"].near_depth, 2)
-        find_intersect = camera_info["intersect"]
 
         w_faces = []
         for face in faces:
             verts = []
 
             for vertex in face:
-                if vertices[vertex] not in verts:
-                    verts.append(vertices[vertex])
-
-            if len(verts) != 3:
-                print("WRONG NUMBER")
+                verts.append(vertices[vertex])
 
             x = sum(map(lambda v: v.world.x, verts)) / len(verts)
             y = sum(map(lambda v: v.world.y, verts)) / len(verts)
             z = sum(map(lambda v: v.world.z, verts)) / len(verts)
 
             center = Vec3(x, y, z)
-            intersect, t = find_intersect(center)
 
-            w_index = (center - focus).length() - (intersect - focus).length()
+            w_index = (center - focus).length_squared()
             w_faces.append((face, w_index))
 
         # drop near and far

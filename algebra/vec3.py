@@ -7,8 +7,11 @@ class Vec3(object):
         self.y = y
         self.z = z
 
+    def length_squared(self):
+        return pow(self.x, 2) + pow(self.y, 2) + pow(self.z, 2)
+
     def length(self):
-        return pow(pow(self.x, 2) + pow(self.y, 2) + pow(self.z, 2), 0.5)
+        return pow(self.length_squared(), 0.5)
 
     def normalized(self):
         return self * (1 / self.length())
