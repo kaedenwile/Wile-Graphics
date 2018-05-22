@@ -96,26 +96,28 @@ class Scene(object):
         \"Pyramid\" of the camera.
         """
 
-        legal_vertices = []
-        for i in range(len(vertices)):
-            vertex = vertices[i]
+        return faces
 
-            if math.isnan(vertex.t) or vertex.t < 0:
-                print("LESS THAN ONE")
-                continue
-
-            if not (abs(vertex.screen.x) <= 1 and abs(vertex.screen.y) <= 1):
-                print("OUTSIDE BOUNDS")
-                continue
-
-            legal_vertices.append(i)
-
-        new_faces = []
-        for face in faces:
-            if any(v in legal_vertices for v in face):
-                new_faces.append(face)
-
-        return new_faces
+        # legal_vertices = []
+        # for i in range(len(vertices)):
+        #     vertex = vertices[i]
+        #
+        #     if math.isnan(vertex.t) or vertex.t < 0:
+        #         print("LESS THAN ONE")
+        #         continue
+        #
+        #     if not (abs(vertex.screen.x) <= 1 and abs(vertex.screen.y) <= 1):
+        #         print("OUTSIDE BOUNDS")
+        #         continue
+        #
+        #     legal_vertices.append(i)
+        #
+        # new_faces = []
+        # for face in faces:
+        #     if any(v in legal_vertices for v in face):
+        #         new_faces.append(face)
+        #
+        # return new_faces
 
     @staticmethod
     def w_index(camera_info, vertices, faces):
@@ -130,16 +132,29 @@ class Scene(object):
 
         w_faces = []
         for face in faces:
-            verts = []
+            max_x, min_x = float('-inf'), float('inf')
+            max_y, min_y = float('-inf'), float('inf')
+            max_z, min_z = float('-inf'), float('inf')
 
             for vertex in face:
-                verts.append(vertices[vertex])
+                v = vertices[vertex].world
 
-            x = sum(map(lambda v: v.world.x, verts)) / len(verts)
-            y = sum(map(lambda v: v.world.y, verts)) / len(verts)
-            z = sum(map(lambda v: v.world.z, verts)) / len(verts)
+                if v.x > max_x:
+                    max_x = v.x
+                if v.x < min_x:
+                    min_x = v.x
 
-            center = Vec3(x, y, z)
+                if v.y > max_y:
+                    max_y = v.y
+                if v.y < min_y:
+                    min_y = v.y
+
+                if v.z > max_z:
+                    max_z = v.z
+                if v.z < min_z:
+                    min_z = v.z
+
+            center = Vec3((max_x+min_x) / 2, (max_y+min_y) / 2, (max_z+min_z) / 2)
 
             w_index = (center - focus).length_squared()
             w_faces.append((face, w_index))

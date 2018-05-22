@@ -44,7 +44,7 @@ node_rotation = Vec3(0, 0, pi/4)
 node_scale = Vec3(1, 1, 1) * 2
 
 # node = Node(mesh, Transform.make(Vec3(-2, 20, -3), Vec3(0, 0, 0), Vec3(1, 1, 1) ))
-node = Node(mesh, Transform.make(Vec3(5, 8, 3), node_rotation, node_scale))
+node = Node(mesh, Transform.make(Vec3(5, 40, 3), node_rotation, node_scale))
 # node3 = Node(mesh, Transform.make(Vec3(2, 10, 0), Vec3(0, 0, 0), Vec3(1, 1, 1) * 2))
 
 # node = Node(mesh, Transform.make(Vec3(0, 5, 0), Vec3(-0.6, 0.8, -0.5), Vec3(9, 1, 9)))
@@ -54,7 +54,7 @@ scene.root.add_child(node)
 # scene.root.add_child(node3)
 
 # camera = Camera(0.05, 0.5, 0.375, 1, 100)
-camera = Camera(0.25, 4, 3, 1, 100)
+camera = Camera(5, 4, 3, 1, 100)
 scene.root.add_child(camera)
 scene.primary_camera = camera
 
