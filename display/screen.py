@@ -1,9 +1,12 @@
 import Tkinter as tk
+import time
 
+
+start = time.time()
 
 class Screen(object):
 
-    def __init__(self, width, height, title, update, callback):
+    def __init__(self, width, height, title, frame_rate, update, callback):
         self.width = width
         self.height = height
         self.title = title
@@ -13,6 +16,8 @@ class Screen(object):
         self.alive = True
         self.current_image = None
         self.next_bitmap = None
+
+        self.frame_rate = 1000 / frame_rate
 
         self._root = None
         self._canvas = None
@@ -38,6 +43,7 @@ class Screen(object):
         if not self.alive:
             self._root.destroy()
 
+        # print("CUSTOM UPDATE @ "+str(time.time()-start))
         self.custom_update(self)
 
         if self.next_bitmap:
@@ -47,13 +53,14 @@ class Screen(object):
 
             self.next_bitmap = None
 
-            print("DRAWN")
+            # print("DRAWN @ "+str(time.time()-start))
 
-        print("UPDATE")
-        self._root.after(500, self._update)
+        # print("UPDATE")
+        self._root.after(self.frame_rate, self._update)
 
     def key_callback(self, event):
         self.custom_callback(event.char)
+        # print("KEY CALLBACK @ "+str(time.time()-start))
         # print "pressed", repr(event.char)
 
     def quit(self):

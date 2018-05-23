@@ -48,11 +48,11 @@ class Camera(Node):
             denominator = focus_to_v.dot(focus_to_center)
 
             if denominator != 0:
-                t = (focus_to_v.length() * pow(focus_to_center.length(), 2)) / denominator
+                t = focus_to_center.length_squared() / denominator
             else:
                 t = float('Inf')
 
-            return focus + focus_to_v.normalized() * t, t
+            return focus + focus_to_v * t, t
 
         return {
             "focus": focus,

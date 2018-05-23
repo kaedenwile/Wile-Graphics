@@ -28,8 +28,6 @@ class Scene(object):
 
         vertices = self.make(transformed_camera, vertices, faces)
 
-        print("C: "+str(transformed_camera["center"]))
-
         world_faces = self.w_index(transformed_camera, vertices,
                                    self.camera_culling(self.primary_camera, vertices, faces))
 
@@ -77,7 +75,7 @@ class Scene(object):
 
         def build_vertex(world):
             intersect, t = find_intersect(world)
-            print(intersect)
+            # print(intersect)
             return Vertex(world, convert_2d(intersect), t)
 
         new_vertices = list(map(build_vertex, vertices))
