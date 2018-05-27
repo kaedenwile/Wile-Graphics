@@ -1,6 +1,5 @@
 import math
 import random as rand
-import Tkinter as tk
 from PIL import Image, ImageTk
 import numpy
 
@@ -51,10 +50,14 @@ class Bitmap(object):
         min_x = min(x_vals)
         max_x = max(x_vals)
 
-        for x in xrange(int(min_x), int(max_x)):
-            if not 0 < x < self.width:
-                continue
+        if min_x < 0 or math.isnan(min_x):
+            min_x = 0
+        if max_x > self.width or math.isnan(max_x):
+            max_x = self.width
 
+        print(min_x, max_x)
+
+        for x in xrange(int(min_x), int(max_x)):
             if x < points[1].x:
                 y_0 = line1(x)
                 if math.isnan(y_0):
@@ -79,14 +82,6 @@ class Bitmap(object):
     def image(self):
         img = Image.fromarray(self.bits)
         return ImageTk.PhotoImage(img)
-
-    # @staticmethod
-    # def random(screen):
-    #     return Bitmap(screen.width, screen.height, [[rand.randint(0, 255) for _ in xrange(0, 3)] for _ in xrange(0, screen.width * screen.height)])
-    #
-    # @staticmethod
-    # def fill(screen, color):
-    #     return Bitmap(screen.width, screen.height, [color for _ in xrange(0, screen.width * screen.height)])
 
 
 def clamp(minimum, n, maximum):

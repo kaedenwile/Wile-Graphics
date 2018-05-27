@@ -4,7 +4,7 @@ from algebra import Vec3
 from display import Bitmap
 
 from vertex import Vertex
-
+from face import Face
 from transform import Transform
 from camera import Camera
 from node import Node
@@ -26,7 +26,7 @@ class Scene(object):
                 transformed_camera = cam
                 break
 
-        vertices = self.make(transformed_camera, vertices, faces)
+        vertices = self.make(transformed_camera, vertices)
 
         world_faces = self.w_index(transformed_camera, vertices,
                                    self.camera_culling(self.primary_camera, vertices, faces))
@@ -34,7 +34,7 @@ class Scene(object):
         # DRAW
         bitmap = Bitmap(screen.width, screen.height)
         for face in world_faces:
-            bitmap.draw_triangle(map(lambda v: vertices[v].screen, face))
+            bitmap.draw_triangle(map(lambda v: vertices[v].screen, face.verts), face.shader.color)
 
         return bitmap
 
@@ -53,7 +53,7 @@ class Scene(object):
                 vertices.append(trans.apply(vertex))
 
             for face in node.mesh.faces:
-                faces.append((face[0] + offset, face[1] + offset, face[2] + offset))
+                faces.append(Face(face[0], face[1], face[2], node.shader, offset=offset))
 
             for child in node.children:
                 if type(child) is Camera:
@@ -68,7 +68,7 @@ class Scene(object):
         return make_recursive(self.root, Transform.none(), 0)
 
     @staticmethod
-    def make(camera, vertices, faces):
+    def make(camera, vertices):
 
         find_intersect = camera["intersect"]
         convert_2d = camera["2d"]
@@ -124,9 +124,10 @@ class Scene(object):
         """
 
         focus = camera_info["focus"]
+
         camera = camera_info["camera"]
-        # camera_far_sqd = math.pow(.far_depth, 2)
-        # camera_near_sqd = math.pow(camera_info["camera"].near_depth, 2)
+        camera_far_sqd = pow(camera.far_depth, 2)
+        camera_near_sqd = pow(camera.near_depth, 2)
 
         w_faces = []
         for face in faces:
@@ -134,7 +135,7 @@ class Scene(object):
             max_y, min_y = float('-inf'), float('inf')
             max_z, min_z = float('-inf'), float('inf')
 
-            for vertex in face:
+            for vertex in face.verts:
                 v = vertices[vertex].world
 
                 if v.x > max_x:
@@ -158,7 +159,7 @@ class Scene(object):
             w_faces.append((face, w_index))
 
         # drop near and far
-        # w_faces = filter(lambda w: camera.near_depth < w[1] < camera.far_depth, w_faces)
+        w_faces = filter(lambda w: camera_near_sqd < w[1] < camera_far_sqd, w_faces)
         w_faces.sort(key=lambda w: w[1], reverse=True)
 
         return list(map(lambda w: w[0], w_faces))

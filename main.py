@@ -64,9 +64,9 @@ should_draw = True
 def main_loop(screen):
     global should_draw
 
-    if should_draw:
-        screen.draw(scene.render(screen))
-        should_draw = False
+    # if should_draw:
+    screen.draw(scene.render(screen))
+#     should_draw = False
 
 
 def key_handler(key):
