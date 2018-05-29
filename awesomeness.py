@@ -20,6 +20,7 @@ sky_mesh = Mesh([
 sky = Node(sky_mesh, Transform.make(Vec3(0, 30, 0), Vec3.zero(), Vec3(100, 1, 100)), Shader((100, 150, 255)))
 scene.root.add_child(sky)
 
+
 # GROUND
 ground_mesh = Mesh([
     Vec3(0, 1, 0),
