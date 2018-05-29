@@ -78,7 +78,7 @@ ground_mesh = Mesh([
     (17, 18, 20),
     (18, 19, 20)
 ])
-ground = Node(ground_mesh, Transform.make(Vec3(0, 10, -6), Vec3.zero(), Vec3(8, 8, 4)), Shader((150, 255, 100)))
+ground = Node(ground_mesh, Transform.make(Vec3(0, 10, -6), Vec3.zero(), Vec3(8, 8, 5)), Shader((150, 255, 100)))
 scene.root.add_child(ground)
 
 # DUDE
@@ -99,7 +99,7 @@ cube = Mesh([
     (0, 4, 2), (2, 4, 6),
     (0, 5, 1), (0, 4, 5)
 ])
-dude = Node(cube, Transform.make(Vec3(0, 10, 1), Vec3.zero(), Vec3(1, 1, 1)), Shader((223, 45, 167)))
+dude = Node(cube, Transform.make(Vec3(0, 10, -0), Vec3.zero(), Vec3(1, 1, 1)), Shader((223, 45, 167)))
 
 l_leg = Node(cube, Transform.make(Vec3(0.75, 0, -1.5), Vec3.zero(), Vec3(0.25, 0.25, 0.5)), Shader((124, 23, 255)))
 dude.add_child(l_leg)
