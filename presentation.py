@@ -3,7 +3,7 @@ from algebra import Vec3, Mat3
 from engine import *
 from math import pi
 
-size = width, height = 1280, 960
+size = width, height = 1024, 768
 
 scene = Scene()
 
@@ -17,7 +17,7 @@ sky_mesh = Mesh([
     (0, 1, 2),
     (0, 2, 3)
 ])
-sky = Node(sky_mesh, Transform.make(Vec3(0, 30, 0), Vec3.zero(), Vec3(100, 1, 100)), Shader((183, 221, 255)))
+sky = Node(sky_mesh, Transform.of(Vec3(0, 30, 0), Vec3.zero(), Vec3(100, 1, 100)), Shader((183, 221, 255)))
 scene.root.add_child(sky)
 
 
@@ -140,12 +140,12 @@ ground_colors = [
     c,
 ]
 
-ground_node = Node(Mesh.empty(), Transform.make(Vec3(-6, 10, -3), Vec3.zero(), Vec3(20, 20, 20)), Shader((255, 255, 255)))
+ground_node = Node(Mesh.empty(), Transform.of(Vec3(-6, 10, -3), Vec3.zero(), Vec3(20, 20, 20)), Shader((255, 255, 255)))
 
 def create_ground_node():
     for i, m in enumerate(ground_meshes):
         mesh = Mesh([gp[m[0]], gp[m[1]], gp[m[2]]], [(0, 1, 2)])
-        n = Node(mesh, Transform.none(), ground_colors[i])
+        n = Node(mesh, Transform.none, ground_colors[i])
         ground_node.add_child(n)
 
 
@@ -206,12 +206,13 @@ trunk_colors = [
     tc,
 ]
 
-tree_node = Node(Mesh.empty(), Transform.make(Vec3(5.5, 7.5, 3), Vec3.zero(), Vec3(0.5, 0.5, 0.7)), Shader((255, 255, 255)))
+tree_node = Node(Mesh.empty(), Transform.of(Vec3(5.5, 7.5, 3), Vec3.zero(), Vec3(0.5, 0.5, 0.7)),
+                 Shader((255, 255, 255)))
 
 def create_tree_node():
     for i, m in enumerate(trunk_meshes):
         mesh = Mesh([tkp[m[0]], tkp[m[1]], tkp[m[2]]], [(0, 1, 2)])
-        n = Node(mesh, Transform.none(), trunk_colors[i])
+        n = Node(mesh, Transform.none, trunk_colors[i])
         tree_node.add_child(n)
 
 create_tree_node()
@@ -293,12 +294,12 @@ foliage_colors = [
     fc,
 ]
 
-foliage_node = Node(Mesh.empty(), Transform.make(Vec3(-0.5, 0, 4), Vec3.zero(), Vec3(1, 1, 1)), Shader((255, 255, 255)))
+foliage_node = Node(Mesh.empty(), Transform.of(Vec3(-0.5, 0, 4), Vec3.zero(), Vec3(1, 1, 1)), Shader((255, 255, 255)))
 
 def create_foliage_node():
     for i, m in enumerate(foliage_meshes):
         mesh = Mesh([fp[m[0]], fp[m[1]], fp[m[2]]], [(0, 1, 2)])
-        n = Node(mesh, Transform.none(), foliage_colors[i])
+        n = Node(mesh, Transform.none, foliage_colors[i])
         foliage_node.add_child(n)
 
 create_foliage_node()
@@ -311,7 +312,7 @@ camera.transform.translation.y = -2
 camera.transform.translation.z = 3
 
 scene.root.add_child(camera)
-scene.primary_camera = camera
+scene.active_camera = camera
 
 should_draw = True
 
@@ -343,50 +344,50 @@ def key_handler(key):
         camera.transform.translation.z -= 1
     elif key == 'q':
         cam_rot.z += pi/16
-        camera.transform = Transform.make(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
+        camera.transform = Transform.of(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
     elif key == 'e':
         cam_rot.z -= pi/16
-        camera.transform = Transform.make(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
+        camera.transform = Transform.of(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
 
     should_draw = True
 
 #     if key == 'f':
 #         node_rotation.z -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'h':
 #         node_rotation.z += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 't':
 #         node_rotation.x -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'g':
 #         node_rotation.x += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'r':
 #         node_rotation.y -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'y':
 #         node_rotation.y += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #
 #     if key == 'u':
 #         node_scale.x += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'j':
 #         node_scale.x -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'i':
 #         node_scale.y += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'k':
 #         node_scale.y -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'o':
 #         node_scale.z += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'l':
 #         node_scale.z -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #
 #     elif key == 'z':
 #         camera.focal_length *= 0.5

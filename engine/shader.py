@@ -1,5 +1,10 @@
+from dataclasses import dataclass
+from typing import Tuple
 
-class Shader(object):
 
-    def __init__(self, color):
-        self.color = color
+@dataclass(frozen=True)
+class Shader:
+    color: Tuple[int, int, int]
+
+
+Shader.white = Shader((255, 255, 255))

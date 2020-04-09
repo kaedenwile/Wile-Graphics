@@ -1,13 +1,21 @@
-from algebra import Vec2
-from engine.node import Node
-from engine.transform import Transform
-from algebra.vec3 import Vec3
+import numpy as np
+from copy import deepcopy
+
+from .node import Node
+from .mesh import Mesh
+from .transform import Transform
 
 
 class Camera(Node):
 
-    def __init__(self, focal_length, width, height, near_depth, far_depth, transform=Transform.none()):
-        Node.__init__(self, transform=transform)
+    def __init__(self, focal_length, width, height, near_depth, far_depth, transform=Transform.none):
+        super(Camera, self).__init__(
+            mesh=Mesh(vertices=np.asarray([  # looking down z-axis
+                [0, 0, 0],  # center
+                [0, 0, focal_length],  # focus
+                [width / 2.0, 0, focal_length],  # right
+                [0, height / 2.0, focal_length],  # top
+            ])), transform=transform)
 
         self.focal_length = focal_length
         self.width = width
@@ -16,7 +24,9 @@ class Camera(Node):
         self.near_depth = near_depth
         self.far_depth = far_depth
 
-    def make(self, transform):
+        self.camera_object = None  # the most recent camera object produced by make
+
+    def make(self):
         """
         Returns a Vec3 -- the focal point of the camera,
         followed by an array of the four corners of the screen
@@ -24,41 +34,54 @@ class Camera(Node):
         all with the transform applied. The fifth is the center.
         A reference to self is also attached.
         """
+        m = deepcopy(self.mesh)
+        focus = m.pointer_to(0)
+        center = m.pointer_to(1)
+        right = m.pointer_to(2)
+        top = m.pointer_to(3)
 
-        transform = transform.combine(self.transform)
+        # def camera_space_transform(mesh):
+        #     """Takes the scene mesh and returns a transform that takes
+        #     any scene coordinate to a camera coordinate."""
+        #     return Transform(np.linalg.solve(
+        #         np.stack([
+        #             mesh[center] - mesh[focus],
+        #             mesh[right] - mesh[focus],
+        #             mesh[top] - mesh[focus]
+        #         ]),
+        #         np.stack([
+        #             self.mesh[1],
+        #             self.mesh[2],
+        #             self.mesh[3]
+        #         ])
+        #     ), mesh[focus])
 
-        w = self.width / 2.0
-        h = self.height / 2.0
-        f = self.focal_length
+        def convert_to_camera(mesh):
+            """
+            Returns a mesh where each vertex has been flattened
+            to an x, y coordinate in the camera plane
+            and a distance w from the focus.
+            """
+            vertices = mesh.vertices
 
-        focus = transform.apply(Vec3.zero())
-        center = transform.apply(Vec3(0, f, 0))
-        focus_to_center = center - focus
+            focus_to_center = mesh[center] - mesh[focus]
+            focus_to_vectors = vertices - mesh[focus]
 
-        right = (transform.apply(Vec3(w, f, 0)) - center).normalized()
-        top = (transform.apply(Vec3(0, f, h)) - center).normalized()
+            distances = np.inner(focus_to_center, focus_to_center) / np.dot(focus_to_vectors, focus_to_center)
+            in_plane = mesh[focus] + focus_to_vectors * distances[:, None]
 
-        def map_to_2d(vector):
-            offset = vector - center
-            return Vec2(offset.dot(right) / w, offset.dot(top) / h)
+            offsets = in_plane - mesh[center]
+            x, y = mesh[right] - mesh[center], mesh[top] - mesh[center]
+            # x, y = x / np.linalg.norm(x), y / np.linalg.norm(y)  # normalize x and y
+            x, y = x / np.inner(x, x), y / np.inner(y, y)  # normalize x and y
 
-        def find_intersect(v):
-            focus_to_v = v - focus
+            print(offsets.shape, np.asarray([x, y]).T.shape)
 
-            denominator = focus_to_v.dot(focus_to_center)
+            new_vertices = np.concatenate([np.dot(offsets, np.asarray([x, y]).T), distances[:, None]], axis=1)
+            return Mesh(new_vertices, mesh.faces, mesh.pointers)
 
-            if denominator != 0:
-                t = focus_to_center.length_squared() / denominator
-            else:
-                t = float('Inf')
-
-            return focus + focus_to_v * t, t
-
-        return {
-            "focus": focus,
-            "center": center,
-            "camera": self,
-            "2d": map_to_2d,
-            "intersect": find_intersect,
+        self.camera_object = {
+            "convert_to_camera": convert_to_camera
         }
 
+        return m.join(*(child.make() for child in self.children)).transformed_by(self.transform)

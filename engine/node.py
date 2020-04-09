@@ -1,17 +1,26 @@
-from engine.mesh import Mesh
-from engine.shader import Shader
-from engine.transform import Transform
+from typing import List
+from dataclasses import dataclass, field
+from copy import deepcopy
+
+from .mesh import Mesh
+from .shader import Shader
+from .transform import Transform
 
 
-class Node(object):
+@dataclass
+class Node:
+    mesh: Mesh = Mesh.empty
+    transform: Transform = Transform.none
+    shader: Shader = Shader.white
 
-    def __init__(self, mesh=Mesh.empty(), transform=Transform.none(), shader=Shader((255, 255, 255))):
-        self.children = []
+    children: List['Node'] = field(default_factory=list, init=False)
+    is_object: bool = field(default=False, init=False)
 
-        self.mesh = mesh
-        self.transform = transform
-        self.shader = shader
-
-    def add_child(self, node):
+    def add_child(self, node: 'Node'):
         self.children.append(node)
 
+    def make(self):
+        """
+        Returns a single mesh containing all children meshes in this node's parent's coordinate system.
+        """
+        return deepcopy(self.mesh).join(*(child.make() for child in self.children)).transformed_by(self.transform)

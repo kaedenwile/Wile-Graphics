@@ -1,86 +1,68 @@
-import math
-import random as rand
 from PIL import Image, ImageTk
-import numpy
-
-from algebra import Vec2
+import numpy as np
 
 
-class Bitmap(object):
+class Bitmap:
 
-    def __init__(self, width, height, bits=list()):
+    def __init__(self, width, height):
         self.width = width
         self.height = height
 
-        if len(bits) == self.width * self.height:
-            self.bits = bits
+        self.bits = np.zeros((self.height, self.width, 4), np.uint8)
+
+        self.ys = np.repeat(np.arange(self.height)[:, None], self.width, axis=1)
+        self.scale = np.array([self.width / 2.0, self.height / 2.0, 1])
+        self.offset = np.array([1, 1, 0])
+
+    def draw_triangle(self, points, color):
+        """
+        points -- np.array with shape (3, 3). point[0, :] = x, y, w
+        """
+        if np.any(np.isnan(points)):
+            return
+
+        color = np.random.random(3) * 255
+        # points = (points + self.offset) * self.scale
+        points = (points + self.offset) * self.scale
+
+        l, m, r = np.argsort(points[:, 0])
+        left, mid, right = points[l], points[m], points[r]
+
+        left_x = clamp(0, int(left[0]), self.width)
+        mid_x = clamp(0, int(mid[0]), self.width)
+        right_x = clamp(0, int(right[0]), self.width)
+
+        in_triangle = np.zeros((self.height, self.width), np.bool)
+
+        left_to_right = self._line_between(left, right)
+        if left_to_right is None:
+            return  # not a triangle, just a line
+
+        if (left_to_mid := self._line_between(left, mid)) is not None:
+            in_triangle[:, left_x:mid_x] = np.logical_xor(self.ys < left_to_mid, self.ys < left_to_right)[:,
+                                           left_x:mid_x]
+
+        if (mid_to_right := self._line_between(mid, right)) is not None:
+            in_triangle[:, mid_x:right_x] = np.logical_xor(self.ys < mid_to_right, self.ys < left_to_right)[:,
+                                            mid_x:right_x]
+
+        self.bits[in_triangle, :3] = color
+
+    def _line_between(self, p1, p2):
+        x1, y1 = p1[:2]
+        x2, y2 = p2[:2]
+
+        if np.isclose(x1, x2):
+            return None
+        elif np.isclose(y1, y2):
+            return np.full(self.width, y1)
         else:
-            # self.bits = [[(0, 0, 0) for _ in xrange(0, self.width)] for _ in xrange(0, self.height)]
-            # self.bits = [(0, 0, 0) for _ in xrange(0, self.width * self.height)]
-            self.bits = numpy.zeros((self.height, self.width, 3), numpy.uint8)
-
-    def __setitem__(self, key, value):
-        row, start_col, end_col = key
-        # index = key[0] + self.width * key[1]  # + self.height*self.width/2 # + self.width/2
-        #
-        # if 0 <= index < len(self.bits):
-        #     self.bits[index] = value
-        self.bits[self.height - end_col:self.height - start_col, row, :] = value
-
-    def __getitem__(self, key):
-        return self.bits[key[0] + self.width * key[1]]
-
-    def draw_triangle(self, points, color=None):
-        points = list(map(lambda p: Vec2((p.x + 1) * self.width / 2.0, (p.y + 1) * self.height / 2.0), points))
-
-        if not color:
-            color = [rand.randint(0, 255) for _ in range(3)]
-
-        # find middle point by x-index
-        points.sort(key=lambda p: p.x)
-
-        line1 = lambda x: (points[0].y - points[1].y) / (points[0].x - points[1].x) * (x - points[0].x) + points[0].y \
-            if abs(points[0].x - points[1].x) > 0.00001 else float("nan")
-        line2 = lambda x: (points[1].y - points[2].y) / (points[1].x - points[2].x) * (x - points[1].x) + points[1].y \
-            if abs(points[1].x - points[2].x) > 0.00001 else float("nan")
-        line3 = lambda x: (points[2].y - points[0].y) / (points[2].x - points[0].x) * (x - points[2].x) + points[2].y \
-            if abs(points[2].x - points[0].x) > 0.00001 else float("nan")
-
-        x_vals = map(lambda p: p.x, points)
-        min_x = min(x_vals)
-        max_x = max(x_vals)
-
-        if min_x < 0 or math.isnan(min_x):
-            min_x = 0
-        if max_x > self.width or math.isnan(max_x):
-            max_x = self.width
-
-        print(min_x, max_x)
-
-        for x in xrange(int(min_x), int(max_x)):
-            if x < points[1].x:
-                y_0 = line1(x)
-                if math.isnan(y_0):
-                    y_0 = line2(x)
-            else:
-                y_0 = line2(x)
-                if math.isnan(y_0):
-                    y_0 = line1(x)
-
-            y_1 = line3(x)
-            if math.isnan(y_1) or math.isnan(y_0):
-                continue
-
-            y_0 = clamp(0, y_0, self.height)
-            y_1 = clamp(0, y_1, self.height)
-
-            min_y = int(math.floor(min(y_0, y_1)))
-            max_y = int(math.ceil(max(y_0, y_1)))
-
-            self[x, min_y, max_y] = color
+            m = (y1 - y2) / (x1 - x2)
+            b = y1 - m * x1
+            return m * np.arange(self.width) + b
 
     def image(self):
-        img = Image.fromarray(self.bits)
+        img = Image.fromarray(self.bits[::-1, :, :3])
         return ImageTk.PhotoImage(img)
 
 

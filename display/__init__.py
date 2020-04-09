@@ -1,2 +1,2 @@
-from screen import Screen
-from bitmap import Bitmap
+from .screen import Screen
+from .bitmap import Bitmap

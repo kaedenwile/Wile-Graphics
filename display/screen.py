@@ -1,10 +1,10 @@
-import Tkinter as tk
+import tkinter as tk
 import time
-
 
 start = time.time()
 
-class Screen(object):
+
+class Screen:
 
     def __init__(self, width, height, title, frame_rate, update, callback):
         self.width = width
@@ -17,7 +17,7 @@ class Screen(object):
         self.current_image = None
         self.next_bitmap = None
 
-        self.frame_rate = 1000 / frame_rate
+        self.frame_rate = int(1000 / frame_rate)
 
         self._root = None
         self._canvas = None

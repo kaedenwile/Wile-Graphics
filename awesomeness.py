@@ -17,7 +17,7 @@ sky_mesh = Mesh([
     (0, 1, 2),
     (0, 2, 3)
 ])
-sky = Node(sky_mesh, Transform.make(Vec3(0, 30, 0), Vec3.zero(), Vec3(100, 1, 100)), Shader((100, 150, 255)))
+sky = Node(sky_mesh, Transform.of(Vec3(0, 30, 0), Vec3.zero(), Vec3(100, 1, 100)), Shader((100, 150, 255)))
 scene.root.add_child(sky)
 
 
@@ -79,7 +79,7 @@ ground_mesh = Mesh([
     (17, 18, 20),
     (18, 19, 20)
 ])
-ground = Node(ground_mesh, Transform.make(Vec3(0, 10, -6), Vec3.zero(), Vec3(8, 8, 5)), Shader((150, 255, 100)))
+ground = Node(ground_mesh, Transform.of(Vec3(0, 10, -6), Vec3.zero(), Vec3(8, 8, 5)), Shader((150, 255, 100)))
 scene.root.add_child(ground)
 
 # DUDE
@@ -100,27 +100,29 @@ cube = Mesh([
     (0, 4, 2), (2, 4, 6),
     (0, 5, 1), (0, 4, 5)
 ])
-dude = Node(cube, Transform.make(Vec3(0, 10, -0), Vec3.zero(), Vec3(1, 1, 1)), Shader((223, 45, 167)))
+dude = Node(cube, Transform.of(Vec3(0, 10, -0), Vec3.zero(), Vec3(1, 1, 1)), Shader((223, 45, 167)))
 
-l_leg = Node(cube, Transform.make(Vec3(0.75, 0, -1.5), Vec3.zero(), Vec3(0.25, 0.25, 0.5)), Shader((124, 23, 255)))
+l_leg = Node(cube, Transform.of(Vec3(0.75, 0, -1.5), Vec3.zero(), Vec3(0.25, 0.25, 0.5)), Shader((124, 23, 255)))
 dude.add_child(l_leg)
 
-r_leg = Node(cube, Transform.make(Vec3(-0.75, 0, -1.5), Vec3.zero(), Vec3(0.25, 0.25, 0.5)), Shader((124, 23, 255)))
+r_leg = Node(cube, Transform.of(Vec3(-0.75, 0, -1.5), Vec3.zero(), Vec3(0.25, 0.25, 0.5)), Shader((124, 23, 255)))
 dude.add_child(r_leg)
 
-l_arm = Node(cube, Transform.make(Vec3(1.5, 0, 0), Vec3.zero(), Vec3(0.5, 0.25, 0.25)), Shader((124, 23, 255)))
+l_arm = Node(cube, Transform.of(Vec3(1.5, 0, 0), Vec3.zero(), Vec3(0.5, 0.25, 0.25)), Shader((124, 23, 255)))
 dude.add_child(l_arm)
 
-r_arm = Node(cube, Transform.make(Vec3(-1.5, 0, 0), Vec3.zero(), Vec3(0.5, 0.25, 0.25)), Shader((124, 23, 255)))
+r_arm = Node(cube, Transform.of(Vec3(-1.5, 0, 0), Vec3.zero(), Vec3(0.5, 0.25, 0.25)), Shader((124, 23, 255)))
 dude.add_child(r_arm)
 
-r_eye = Node(cube, Transform.make(Vec3(0.4, -1.5, 0.25), Vec3.zero(), Vec3(0.25, 0.125, 0.25)), Shader((124, 23, 255)))
-r_pupil = Node(cube, Transform.make(Vec3(0, -0.125, 0), Vec3(0, pi/4, 0), Vec3(0.25, 0.25, 0.25)), Shader((255, 255, 255)))
+r_eye = Node(cube, Transform.of(Vec3(0.4, -1.5, 0.25), Vec3.zero(), Vec3(0.25, 0.125, 0.25)), Shader((124, 23, 255)))
+r_pupil = Node(cube, Transform.of(Vec3(0, -0.125, 0), Vec3(0, pi / 4, 0), Vec3(0.25, 0.25, 0.25)),
+               Shader((255, 255, 255)))
 r_eye.add_child(r_pupil)
 dude.add_child(r_eye)
 
-l_eye = Node(cube, Transform.make(Vec3(-0.4, -1.5, 0.25), Vec3.zero(), Vec3(0.25, 0.125, 0.25)), Shader((124, 23, 255)))
-l_pupil = Node(cube, Transform.make(Vec3(0, -0.125, 0), Vec3(0, pi/4, 0), Vec3(0.25, 0.25, 0.25)), Shader((255, 255, 255)))
+l_eye = Node(cube, Transform.of(Vec3(-0.4, -1.5, 0.25), Vec3.zero(), Vec3(0.25, 0.125, 0.25)), Shader((124, 23, 255)))
+l_pupil = Node(cube, Transform.of(Vec3(0, -0.125, 0), Vec3(0, pi / 4, 0), Vec3(0.25, 0.25, 0.25)),
+               Shader((255, 255, 255)))
 l_eye.add_child(l_pupil)
 dude.add_child(l_eye)
 
@@ -149,7 +151,8 @@ mouth_mesh = Mesh([
     (7, 4, 3),
     (3, 0, 4)
 ])
-mouth = Node(mouth_mesh, Transform.make(Vec3(0, -1.5, -0.5), Vec3.zero(), Vec3(0.5, 0.125, 0.125)), Shader((255, 255, 255)))
+mouth = Node(mouth_mesh, Transform.of(Vec3(0, -1.5, -0.5), Vec3.zero(), Vec3(0.5, 0.125, 0.125)),
+             Shader((255, 255, 255)))
 dude.add_child(mouth)
 
 scene.root.add_child(dude)
@@ -158,7 +161,7 @@ cam_rot = Vec3(0, 0, 0)
 
 camera = Camera(2, 4, 3, 5, 100)
 scene.root.add_child(camera)
-scene.primary_camera = camera
+scene.active_camera = camera
 
 should_draw = True
 
@@ -186,50 +189,50 @@ def key_handler(key):
         camera.transform.translation.y -= 1
     elif key == 'q':
         cam_rot.z += pi/16
-        camera.transform = Transform.make(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
+        camera.transform = Transform.of(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
     elif key == 'e':
         cam_rot.z -= pi/16
-        camera.transform = Transform.make(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
+        camera.transform = Transform.of(camera.transform.translation, cam_rot, Vec3(1, 1, 1))
 
     should_draw = True
 
 #     if key == 'f':
 #         node_rotation.z -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'h':
 #         node_rotation.z += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 't':
 #         node_rotation.x -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'g':
 #         node_rotation.x += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'r':
 #         node_rotation.y -= pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'y':
 #         node_rotation.y += pi/16
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #
 #     if key == 'u':
 #         node_scale.x += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'j':
 #         node_scale.x -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'i':
 #         node_scale.y += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'k':
 #         node_scale.y -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'o':
 #         node_scale.z += 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #     elif key == 'l':
 #         node_scale.z -= 0.25
-#         node.transform = Transform.make(node.transform.translation, node_rotation, node_scale)
+#         node.transform = Transform.of(node.transform.translation, node_rotation, node_scale)
 #
 #     elif key == 'z':
 #         camera.focal_length *= 0.5
