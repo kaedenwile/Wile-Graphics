@@ -75,9 +75,8 @@ class Camera(Node):
             # x, y = x / np.linalg.norm(x), y / np.linalg.norm(y)  # normalize x and y
             x, y = x / np.inner(x, x), y / np.inner(y, y)  # normalize x and y
 
-            print(offsets.shape, np.asarray([x, y]).T.shape)
-
-            new_vertices = np.concatenate([np.dot(offsets, np.asarray([x, y]).T), distances[:, None]], axis=1)
+            new_vertices = np.concatenate([np.dot(offsets, np.asarray([x, y]).T), np.reciprocal(distances)[:, None]],
+                                          axis=1)
             return Mesh(new_vertices, mesh.faces, mesh.pointers)
 
         self.camera_object = {

@@ -41,7 +41,7 @@ class Transform:
             [sin[2], cos[2], 0],
             [0, 0, 1]])
 
-        return Transform(x_rot * y_rot * z_rot * scale, translation)
+        return Transform(x_rot @ y_rot @ z_rot @ scale, translation)
 
 
 Transform.none = Transform.of()

@@ -8,9 +8,12 @@ class Bitmap:
         self.width = width
         self.height = height
 
-        self.bits = np.zeros((self.height, self.width, 4), np.uint8)
+        self.bits = np.zeros((self.height, self.width, 3), np.uint8)
+        self.w_pos = np.full((self.height, self.width), np.inf)
 
+        self.xs = np.repeat(np.arange(self.width)[None, :], self.height, axis=0)
         self.ys = np.repeat(np.arange(self.height)[:, None], self.width, axis=1)
+
         self.scale = np.array([self.width / 2.0, self.height / 2.0, 1])
         self.offset = np.array([1, 1, 0])
 
@@ -21,8 +24,6 @@ class Bitmap:
         if np.any(np.isnan(points)):
             return
 
-        color = np.random.random(3) * 255
-        # points = (points + self.offset) * self.scale
         points = (points + self.offset) * self.scale
 
         l, m, r = np.argsort(points[:, 0])
@@ -46,7 +47,12 @@ class Bitmap:
             in_triangle[:, mid_x:right_x] = np.logical_xor(self.ys < mid_to_right, self.ys < left_to_right)[:,
                                             mid_x:right_x]
 
-        self.bits[in_triangle, :3] = color
+        ws = self._plane_from(left, mid, right)
+        ws[np.logical_or(np.logical_not(in_triangle), (ws < 0).squeeze())] = np.inf
+        to_draw = ws < self.w_pos
+
+        self.bits[to_draw] = np.random.random(3) * 255
+        self.w_pos[to_draw] = ws[to_draw]
 
     def _line_between(self, p1, p2):
         x1, y1 = p1[:2]
@@ -60,6 +66,19 @@ class Bitmap:
             m = (y1 - y2) / (x1 - x2)
             b = y1 - m * x1
             return m * np.arange(self.width) + b
+
+    def _plane_from(self, p1, p2, p3):
+        p1_to_p2 = p2 - p1
+        p1_to_p3 = p3 - p1
+        normal = Nx, Ny, Nz = np.cross(p1_to_p2, p1_to_p3)  # normal vector
+
+        # plane: Nx * x + Ny * y + Nz * z = normal @ p1
+        # z = ( normal @ p1 - Nx * x + Ny * y ) / Nz
+        return (
+                       np.full((self.height, self.width), normal @ p1)
+                       - Nx * self.xs
+                       - Ny * self.ys
+               ) / Nz
 
     def image(self):
         img = Image.fromarray(self.bits[::-1, :, :3])

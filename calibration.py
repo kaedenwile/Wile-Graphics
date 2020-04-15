@@ -12,8 +12,14 @@ def main_loop(screen):
 
     bitmap.draw_triangle(np.asarray([
         [1 / width, -1 / height, 5],
-        [1 / width, 1 / height, 6],
-        [-1 / width, 1 / height, 0],
+        [1 / width, 1 / height, 5],
+        [-1 / width, 0, 10],
+    ]) * 100, Shader.white)
+
+    bitmap.draw_triangle(np.asarray([
+        [-1 / width, -1 / height, 5],
+        [-1 / width, 1 / height, 5],
+        [1 / width, 0, 10],
     ]) * 100, Shader.white)
 
     screen.draw(bitmap)
